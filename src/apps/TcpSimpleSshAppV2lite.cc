@@ -40,6 +40,10 @@ namespace inet {
 
 Define_Module(TcpSimpleSshAppV2lite);
 
+int64_t expectingBytes;
+
+bool commandOutputReceived;
+
 
 TcpSimpleSshAppV2lite::~TcpSimpleSshAppV2lite()
 {
@@ -57,10 +61,11 @@ void TcpSimpleSshAppV2lite::initialize(int stage)
     TcpAppBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        numCharsToType = numLinesToType = 0;
+
+        numCharsToType = numLinesToType = expectingBytes =  0;
         WATCH(numCharsToType);
         WATCH(numLinesToType);
-
+        commandOutputReceived = false;
         rttSignal = registerSignal("roundTripTime");
         mosValueSignal = registerSignal("mosValue");
         simtime_t startTime = par("startTime");
@@ -119,6 +124,7 @@ void TcpSimpleSshAppV2lite::handleTimer(cMessage *msg)
                 if (socket.getState() != 6) {// change here to eliminate LOCALLY_CLOSED socket state error
                     EV_INFO << "user types one character, " << numCharsToType - 1 << " more to go\n";
                     sendGenericAppMsg(40, 40);
+                    expectingBytes+=40;
                     numCharsToType--;
                 }
                 checkedScheduleAt(simTime() + par("keyPressDelay"), timeoutMsg);
@@ -136,6 +142,7 @@ void TcpSimpleSshAppV2lite::handleTimer(cMessage *msg)
                         padLen = 16 - (tempReqRepLength % 16);
                     }
                     sendGenericAppMsg(40, tempReqRepLength + padLen);
+                    expectingBytes+=tempReqRepLength + padLen;
                     sendTime = simTime();
                     numCharsToType = par("commandLength");
                 }
@@ -182,47 +189,45 @@ void TcpSimpleSshAppV2lite::socketEstablished(TcpSocket *socket)
 void TcpSimpleSshAppV2lite::socketDataArrived(TcpSocket *socket, Packet *msg, bool urgent)
 {
     int64_t len = msg->getByteLength();
+
     EV << "SSH Client received data: " << msg << ", with length: " << len << "; CurTime: " << simTime() << "\n";
     EV << "SSH Client received data with creation time: " << msg->getCreationTime() << "\n";
-    if (len == 40) {
-        // this is an echo, ignore
-        EV_INFO << "received echo\n";
-    }
-    else {
-        // output from last typed command arrived.
-        EV_INFO << "received output of command typed\n";
-//        simtime_t currentTime = simTime();
-//        simtime_t endToEndTime = currentTime - sendTime;
-//        double precision = (double) endToEndTime.getScaleExp();
-//        double decreaseExp = precision;// + 3.0;
-//        double rtt = (double) endToEndTime.raw() * pow(10, decreaseExp);
-//        emit(rttSignal, rtt);
-//        finalRTT = rtt;
+
+
+
+
+    expectingBytes-=len;
+    EV_INFO << "User is expecting " << expectingBytes << " bytes \n";
+    // If command output has been sent and the user has no more expectingBytes it means that he/she has received the output to the command he typed.
+    if (len >= (int) par("commandOutputLength") && expectingBytes == 0) {
         simtime_t meanRtt = listener->getMeanRtt();
         double precision = (double) meanRtt.getScaleExp();
         finalRTT = (double) meanRtt.raw() * pow(10, precision);
         emit(rttSignal, finalRTT);
         getParentModule()->unsubscribe("rtt", listener);
-//        delete(listener);
+        EV_INFO << "User has received all expected bytes from the current command.\n";
         // If user has finished working, she closes the connection, otherwise
         // starts typing again after a delay
-        numLinesToType--;
-
-        if (numLinesToType == 0) {
-            EV_INFO << "user has no more commands to type\n";
-            if (timeoutMsg->isScheduled())
+        if (numLinesToType) numLinesToType--;
+        if (timeoutMsg->isScheduled())
                 cancelEvent(timeoutMsg);
-            timeoutMsg->setKind(MSGKIND_CLOSE);
-            checkedScheduleAt(simTime() + par("thinkTime"), timeoutMsg);
+        timeoutMsg->setKind(MSGKIND_CLOSE);
+        checkedScheduleAt(simTime() + par("thinkTime"), timeoutMsg);
+        commandOutputReceived = true;
         }
-        else {
+   else {
+        EV_INFO << "Number of commands left: "<< numLinesToType << "\n";
+        if (len >= (int) par("commandOutputLength")  &&  numLinesToType > 0) { //if command output has been received and there are more commands (=numLinesToType) schedule next one. Is this condition equivalent to the condition isScheduled() ?
             EV_INFO << "user looks at output, then starts typing next command\n";
             if (!timeoutMsg->isScheduled()) {
+                EV_INFO << "In isScheduled() \n";
                 timeoutMsg->setKind(MSGKIND_SEND);
                 checkedScheduleAt(simTime() + par("thinkTime"), timeoutMsg);
+                }
             }
         }
-    }
+
+
 
     TcpAppBase::socketDataArrived(socket, msg, urgent);
 
@@ -239,36 +244,36 @@ void TcpSimpleSshAppV2lite::socketClosed(TcpSocket *socket)
         meanRtt = 10000;
     }
 
-//    std::string command = "python3 sshMOScalcFiles/code/sshMOS.py ";
-//    std::string moduleName = getParentModule()->getFullName();
-//    std::string configName = cSimulation::getActiveEnvir()->getConfigEx()->getActiveConfigName();
-//    std::string runNumber = std::to_string(cSimulation::getActiveEnvir()->getConfigEx()->getActiveRunNumber());
-//    std::string filename = "sshMOScalcFiles/tempResults/";
-//    filename += moduleName;
-//    filename += configName;
-//    filename += runNumber;
-//    filename += ".txt";
-//    command += std::to_string(meanRtt);
-//    command += " ";
-//    command += filename;
-//    std::system(command.c_str());
-//
-//    // Fetch the MOS value from the text file where it has just been saved
-//    std::fstream fin;
-//    EV << "File to open: " << filename << "\n";
-//    fin.open(filename, std::ios::in);
-//    double mosValue = 1;
-//    std::string value;
-//    if (fin.is_open()) {
-//        if (getline(fin, value)) {
-//            mosValue = std::stod(value);
-//            EV << "Received MOS value: " << mosValue << "\n";
-//        }
-//    }
-//    fin.close();
-//    std::remove(filename.c_str());
-//
-//    emit(mosValueSignal, mosValue);
+  /*  std::string command = "python3 sshMOScalcFiles/code/sshMOS.py ";
+    std::string moduleName = getParentModule()->getFullName();
+    std::string configName = cSimulation::getActiveEnvir()->getConfigEx()->getActiveConfigName();
+    std::string runNumber = std::to_string(cSimulation::getActiveEnvir()->getConfigEx()->getActiveRunNumber());
+    std::string filename = "sshMOScalcFiles/tempResults/";
+    filename += moduleName;
+    filename += configName;
+    filename += runNumber;
+    filename += ".txt";
+    command += std::to_string(meanRtt);
+    command += " ";
+    command += filename;
+    std::system(command.c_str());
+
+     //Fetch the MOS value from the text file where it has just been saved
+    std::fstream fin;
+    EV << "File to open: " << filename << "\n";
+    fin.open(filename, std::ios::in);
+    double mosValue = 1;
+    std::string value;
+    if (fin.is_open()) {
+        if (getline(fin, value)) {
+            mosValue = std::stod(value);
+            EV << "Received MOS value: " << mosValue << "\n";
+        }
+    }
+    fin.close();
+    std::remove(filename.c_str());
+
+    emit(mosValueSignal, mosValue);*/
 
     cancelEvent(timeoutMsg);
     if (operationalState == TcpAppBase::State::OPERATING) {

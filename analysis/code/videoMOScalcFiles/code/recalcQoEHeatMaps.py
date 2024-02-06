@@ -246,6 +246,8 @@ def recalculateQoEsimulationRun(testName, numCLI, nodeTypes, nodeSplit, nodeType
 
 if __name__ == "__main__":
     name = sys.argv[2]
+    print(name)
+    print(name.split('_VID')[1])
     numVID = int(name.split('_VID')[1].split('_LVD')[0])
     numLVD = int(name.split('_LVD')[1].split('_FDO')[0])
     numFDO = int(name.split('_FDO')[1].split('_SSH')[0])
@@ -256,7 +258,9 @@ if __name__ == "__main__":
     delays = [20] #ms
     #recalculateQoEsimulationRun(sys.argv[1], numCLI, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP', 'hostHVIP'],  [numVID, numLVD, numFDO, numSSH, numVIP, numHVIP], 'hostLVD', 1)
     if numVID != 0:
-        tps = [x for x in range (100*numVID, 1520*numVID, 20*numVID)] #in kbps
+        #tps = [x for x in range (100*numVID, 1520*numVID, 20*numVID)] #in kbps
+        tps=[100*numVID,563*numVID,1575*numVID]
+        print(tps)
         recalculateQoEsimulationRun(sys.argv[1], numCLI, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP', 'hostHVIP'],  [numVID, numLVD, numFDO, numSSH, numVIP, numHVIP], 'hostVID', 5, tps, delays)
     elif numLVD != 0:
         tps = [x for x in range (100*numLVD, 1920*numLVD, 20*numLVD)] #in kbps

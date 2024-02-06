@@ -55,35 +55,48 @@ else
         exit 3
     fi
 fi
-
+echo $(pwd)
+cd ${sourceFolder}
+numRuns="$(ls -1 | wc -l)"
+numRuns=$((${numRuns}/3))
+echo "There are ${numRuns} in this folder."
 firstResult=0
 lastResult=$(($numRuns - 1))
+cd ../
+echo $(pwd)
 
 for run_num in $(eval echo "{$firstResult..$lastResult}")
 do
     nVID=$(perl -nle'print $& while m{(?<=nVID )[0-9]+}g' ${sourceFolder}/*-${run_num}.vci)
+    nLVD=$(perl -nle'print $& while m{(?<=nLVD )[0-9]+}g' ${sourceFolder}/*-${run_num}.vci)
     nFDO=$(perl -nle'print $& while m{(?<=nFDO )[0-9]+}g' ${sourceFolder}/*-${run_num}.vci)
     nSSH=$(perl -nle'print $& while m{(?<=nSSH )[0-9]+}g' ${sourceFolder}/*-${run_num}.vci)
     nVIP=$(perl -nle'print $& while m{(?<=nVIP )[0-9]+}g' ${sourceFolder}/*-${run_num}.vci)
+    nHVIP=$(perl -nle'print $& while m{(?<=nHVIP )[0-9]+}g' ${sourceFolder}/*-${run_num}.vci)
 
     tp=$(perl -nle'print $& while m{(?<=TP )[0-9]+}g' ${sourceFolder}/*-${run_num}.vci)
     delay=$(perl -nle'print $& while m{(?<=del )[0-9]+}g' ${sourceFolder}/*-${run_num}.vci)
 
     lastVID=$(($nVID - 1))
+    lastLVD=$(($nLVD - 1))
     lastFDO=$(($nFDO - 1))
     lastSSH=$(($nSSH - 1))
     lastVIP=$(($nVIP - 1))
+    lastHVIP=$(($nHVIP - 1))
     lastSlice=$(($numSlices - 1))
 
-    totalNum=$(($nVID + $nFDO + $nSSH + $nVIP))
+    totalNum=$(($nVID + $nLVD + $nFDO + $nSSH + $nVIP + $nHVIP))
 
     echo "Total number of clients in run: $totalNum. This includes:"
-    echo -e "\t- $nVID video or live video clients"
+    echo -e "\t- $nVID video clients"
+    echo -e "\t- $nLVD live video clients"
     echo -e "\t- $nFDO file download clients"
     echo -e "\t- $nSSH SSH clients"
     echo -e "\t- $nVIP VoIP clients"
+    echo -e "\t- $nHVIP VoIP clients"
 
-    subfolderName="${resultsSubfolder}_${totalNum}_VID${nVID}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}"
+
+    subfolderName="${resultsSubfolder}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_HVIP${nHVIP}"
     echo "Subfolder name: $subfolderName"
     if [ -d "${resultsFolder}/${subfolderName}" ] 
     then
@@ -115,6 +128,16 @@ do
         echo -e "\tExporting for video server:\t\t\c"
         opp_scavetool export -f "module=~"*serverVID*""  -F CSV-S -o ${resultsFolder}/${subfolderName}/${experimentDescriptor}_tp${tp}_del${delay}_serverVID_vec.csv ${sourceFolder}/*-${run_num}.vec
     fi
+        if (( lastLVD >= firstResult ))
+    then
+        for cli_num in $(eval echo "{$firstResult..$lastLVD}")
+        do
+            echo -e "\tExporting for video client $cli_num:\t\t\c"
+            opp_scavetool export -f "module=~"*hostLVD[$cli_num]*""  -F CSV-S -o ${resultsFolder}/${subfolderName}/${experimentDescriptor}_tp${tp}_del${delay}_hostLVD${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
+        done
+        echo -e "\tExporting for video server:\t\t\c"
+        opp_scavetool export -f "module=~"*serverLVD*""  -F CSV-S -o ${resultsFolder}/${subfolderName}/${experimentDescriptor}_tp${tp}_del${delay}_serverLVD_vec.csv ${sourceFolder}/*-${run_num}.vec
+    fi
     if (( lastFDO >= firstResult ))
     then
         for cli_num in $(eval echo "{$firstResult..$lastFDO}")
@@ -144,6 +167,16 @@ do
         done
         echo -e "\tExporting for VoIP server:\t\t\c"
         opp_scavetool export -f "module=~"*serverVIP*""  -F CSV-S -o ${resultsFolder}/${subfolderName}/${experimentDescriptor}_tp${tp}_del${delay}_serverVIP_vec.csv ${sourceFolder}/*-${run_num}.vec
+    fi
+       if (( lastHVIP >= firstResult ))
+    then
+        for cli_num in $(eval echo "{$firstResult..$lastVIP}")
+        do
+            echo -e "\tExporting for hVoIP client $cli_num:\t\t\c"
+            opp_scavetool export -f "module=~"*hostHVIP[$cli_num]*""  -F CSV-S -o ${resultsFolder}/${subfolderName}/${experimentDescriptor}_tp${tp}_del${delay}_hostHVIP${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
+        done
+        echo -e "\tExporting for hVoIP server:\t\t\c"
+        opp_scavetool export -f "module=~"*serverHVIP*""  -F CSV-S -o ${resultsFolder}/${subfolderName}/${experimentDescriptor}_tp${tp}_del${delay}_serverHVIP_vec.csv ${sourceFolder}/*-${run_num}.vec
     fi
 
 done

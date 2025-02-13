@@ -22,6 +22,7 @@ For installation, the following software environment is needed:
   - q = Queue size(B= BDP, T = Tiny Buffers, R = Rcwnd),
   - tp = Link capacity [% of the Tp_reference],
   - g = Granularity of the resource allocation scheme (0 = per Flow, 1 = per Slice),
+  - a = Application type (VID = Video-on-Demand, LVD = Live video, VIP = VoIP, FDO = File Download)
   - MOS = Mean Opinion Score, and
   - SU = System Utilization
 

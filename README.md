@@ -1,6 +1,6 @@
 # improved5gNS
 
-This git-repository is a code base corresponding to the paper titled Analysis of QoE-Aware Slice Configuration on Application Quality in Beyond 5G Networks, submitted for IEEE Transactions on Network and Service Management.
+This git-repository is a code and data-set base corresponding to the paper titled Analysis of QoE-Aware Slice Configuration on Application Quality in Beyond 5G Networks, submitted for IEEE Transactions on Network and Service Management.
 
 # Requirements: 
 For installation, the following software environment is needed: 

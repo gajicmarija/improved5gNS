@@ -13,7 +13,6 @@ For installation, the following software environment is needed:
 - To run a simulation successfully, files in simulation/config/htbTree and simulation/config/routing are needed for each configuration. 
 - Bash script called runAndExportParameterStudy.sh runs the simulations and uses opp-scavetool to export the selcted data as .csv files.
 - File runAllConfigurations.txt van be used for parallel running of the simulations, e.g. parallel --jobs 10 < runAllConfigurations.txt and shows syntax for how each configuration can be ran via terminal. 
-- File dataComplete.csv is the summarized output file with results of the evaluations, including MOS and System Utilization
 - Python script plotResults.py is used to create plots from the exported data.
 
 - # Data-set:

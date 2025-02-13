@@ -15,7 +15,7 @@ For installation, the following software environment is needed:
 - File runAllConfigurations.txt van be used for parallel running of the simulations, e.g. parallel --jobs 10 < runAllConfigurations.txt and shows syntax for how each configuration can be ran via terminal. 
 - Python script plotResults.py is used to create plots from the exported data.
 
-- # Data-set:
+# Data-set:
 - The outcomes can be found under analysis/exports/extracted/mos2, called data*.csv contaning both QoE and System Utilization outcome for each scenario evaluated.
 - In the csv file, the following notation is used:
   - n = Number of clients,

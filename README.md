@@ -18,11 +18,11 @@ For installation, the following software environment is needed:
 - # Data-set:
 - The outcomes can be found under analysis/exports/extracted/mos2, called data*.csv contaning both QoE and System Utilization outcome for each scenario evaluated.
 - In the csv file, the following notation is used:
-  - n = Number of Clients,
+  - n = Number of clients,
   - q = Queue size(B= BDP, T = Tiny Buffers, R = Rcwnd),
   - tp = Link capacity [% of the Tp_reference],
-  - g = granularity (0 = per Flow, 1 = per Slice),
-  - MOS = Mean Opinion Score,
+  - g = Granularity of the resource allocation scheme (0 = per Flow, 1 = per Slice),
+  - MOS = Mean Opinion Score, and
   - SU = System Utilization
 
 

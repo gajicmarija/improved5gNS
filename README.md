@@ -9,8 +9,8 @@ For installation, the following software environment is needed:
 - Python, version 3.7 (could potentially be compatible with other versions as well)
 
 # Code base:
-- File simulation/parameterStudyConfiguration.ini contains the configuration files for all simulations in OMNeT++.
-- To run a simulation successfully, files in simulation/config/htbTree and simulation/config/routing are needed for each configuration. 
+- File simulations/parameterStudyConfiguration.ini contains the configuration files for all simulations in OMNeT++.
+- To run a simulation successfully, files in simulations/config/htbTree and simulations/config/routing are needed for each configuration. 
 - Bash script called simulations/runAndExportParameterStudy.sh runs the simulations and uses opp-scavetool to export the selcted data as .csv files.
 - File simulations/runAllConfigurations.txt van be used for parallel running of the simulations, e.g. parallel --jobs 10 < runAllConfigurations.txt and shows syntax for how each configuration can be ran via terminal. 
 - Python script analysis/code/plotFinalFigures.py is used to create plots from the exported data.

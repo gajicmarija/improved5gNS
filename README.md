@@ -27,4 +27,4 @@ For installation, the following software environment is needed:
   - SU = System Utilization
 
 
-
+For questions, do not hestitate to reach out via e-mail to marija.gajic@ntnu.no. 

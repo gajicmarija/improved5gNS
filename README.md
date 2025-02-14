@@ -6,6 +6,7 @@ This git-repository is a code and data-set base corresponding to the paper title
 For installation, the following software environment is needed: 
 - OMNeT++ version 6.0.0 or 6.1.0
 - INET Framework version 4.4.0
+- INET-GPL Framework (https://github.com/inet-framework/inet-gpl, NB: Make sure both INET and INET-GPL are included as referenced projects for improved5gNS. )
 - Python, version 3.7 (could potentially be compatible with other versions as well)
 
 # Code base:

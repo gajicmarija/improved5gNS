@@ -17,7 +17,7 @@ For installation, the following software environment is needed:
 - Python script analysis/code/plotFinalFigures.py is used to create plots from the exported data.
 
 # Data-set:
-- The outcomes can be found under analysis/exports/extracted/mos2, called data*.csv contaning both QoE and System Utilization outcome for each scenario evaluated.
+- The outcomes can be found under analysis/exports/extracted/mos2, called data*.csv contaning both QoE and System Utilization outcomes for each scenario evaluated.
 - In the csv file, the following notation is used:
   - n = Number of clients,
   - q = Queue size(B= BDP, T = Tiny Buffers, R = Rcwnd),
